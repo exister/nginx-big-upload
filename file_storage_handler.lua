@@ -9,6 +9,7 @@
 local setmetatable = setmetatable
 local concat = table.concat
 local io = io
+local os = os
 local string = string
 local error = error
 local ngx = ngx
@@ -46,15 +47,15 @@ local function init_file(self, ctx)
   else
     -- write from scratch
     local dirs = stringy.split(ctx.file_path, '/')
-    for i=1, #dirs - 2 do
-        local sub = {}
-        for j=1, i+1 do
-            table.insert(sub, dirs[j])
-        end
-        local p = concat(sub, '/')
-        if not paths.dirp(p) then
-            paths.mkdir(p)
-        end
+
+    local sub = {}
+    for i=1, #dirs - 1 do
+        table.insert(sub, dirs[i])
+    end
+
+    local p = concat(sub, '/')
+    if not paths.dirp(p) then
+        os.execute('mkdir -p -m 777 '..p)
     end
 
     file = io.open(ctx.file_path, "w") -- Truncate to zero length or create file for writing.
