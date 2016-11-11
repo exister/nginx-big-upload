@@ -12,6 +12,10 @@ local io = io
 local string = string
 local error = error
 local ngx = ngx
+local paths = require('paths')
+local stringy = require('stringy')
+local table = table
+local util = require('util')
 
 module(...)
 
@@ -41,6 +45,18 @@ local function init_file(self, ctx)
     end
   else
     -- write from scratch
+    local dirs = stringy.split(ctx.file_path, '/')
+    for i=1, #dirs - 2 do
+        local sub = {}
+        for j=1, i+1 do
+            table.insert(sub, dirs[j])
+        end
+        local p = concat(sub, '/')
+        if not paths.dirp(p) then
+            paths.mkdir(p)
+        end
+    end
+
     file = io.open(ctx.file_path, "w") -- Truncate to zero length or create file for writing.
   end
 
@@ -57,7 +73,7 @@ local function close_file(self)
 end
 
 local function on_body_start(self, ctx)
-  ctx.file_path = concat({self.dir, ctx.id}, "/")
+  ctx.file_path = util.get_file_name(self.dir, ctx.id)
   return self:init_file(ctx)
 end
 

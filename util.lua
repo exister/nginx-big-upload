@@ -1,5 +1,6 @@
 local string = string
 local io = io
+local concat = table.concat
 
 module(...)
 
@@ -16,4 +17,9 @@ function random_sha1()
     local random_bin = ur:read(20)  -- loads 160 bits
     ur:close()
     return tohex(random_bin)  -- returns 40 hexadecimal characters
+end
+
+function get_file_name(basedir, id)
+    local lower_id = id:lower()
+    return concat({basedir, lower_id:sub(1, 2), lower_id:sub(3, 4), id}, "/")
 end

@@ -10,6 +10,7 @@ local ngx = ngx
 local string = string
 local concat = table.concat
 local error = error
+local util = require('util')
 
 
 module(...)
@@ -34,8 +35,7 @@ end
 
 -- override
 local function on_body_start(self, ctx)
-  local file_path = concat({self.dir, ctx.id}, "/")
-  ctx.file_path = file_path
+  ctx.file_path = util.get_file_name(self.dir, ctx.id)
   return self:init_file(ctx)
 end
 

@@ -67,7 +67,7 @@ function handler(storage_path)
       self.sha1_ctx = ffi.new("SHA_CTX")
       self.skip_bytes = 0
       if not ctx.first_chunk then
-        local file_path = concat({storage_path, ctx.id}, "/")  -- file based backends not initialized yet
+        local file_path = util.get_file_name(storage_path, ctx.id)
         self.real_size, self.sha1_ctx = shactx_from_file(file_path)
 
         --overlapping chunk upload, need to skip repeated data
