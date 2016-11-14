@@ -15,38 +15,48 @@ local util = require('util')
 
 module(...)
 
+local function report_file_uploaded(self, ctx)
+    ngx.req.set_header('Content-Type', 'application/x-www-form-urlencoded')
+    return ngx.location.capture(self.backend, {
+        method = ngx.HTTP_POST,
+        body = ngx.encode_args({
+            size = ctx.range_total,
+            id = ctx.id,
+            path = ctx.file_path,
+            name = ctx.get_name(),
+            checksum = ctx.checksum,
+            sha1 = ctx.sha1
+        })
+    })
+end
+
+local function report_file_progress(self, ctx)
+    ngx.req.set_header('Content-Type', 'application/x-www-form-urlencoded')
+    ngx.location.capture(self.backend_progress, {
+        method = ngx.HTTP_POST,
+        body = ngx.encode_args({
+            size = ctx.range_total,
+            chunk_size = ctx.content_length,
+            file_size = util.fsize(ctx.file_path),
+            bytes_received = ngx.var.bytes_received,
+            request_length = ngx.var.request_length,
+            request_time = ngx.var.request_time,
+            session_time = ngx.var.session_time,
+            id = ctx.id,
+            path = ctx.file_path,
+            name = ctx.get_name(),
+        })
+    })
+end
+
 local function end_backend(self, ctx)
+    if self.backend_progress then
+        report_file_progress(self, ctx)
+    end
+
     -- last chunk commited?
     if ctx.range_to + 1 == ctx.range_total then
-        ngx.req.set_header('Content-Type', 'application/x-www-form-urlencoded')
-        return ngx.location.capture(self.backend, {
-            method = ngx.HTTP_POST,
-            body = ngx.encode_args({
-                size = ctx.range_total,
-                id = ctx.id,
-                path = ctx.file_path,
-                name = ctx.get_name(),
-                checksum = ctx.checksum,
-                sha1 = ctx.sha1
-            })
-        })
-    elseif self.backend_progress then
-        ngx.req.set_header('Content-Type', 'application/x-www-form-urlencoded')
-        ngx.location.capture(self.backend_progress, {
-            method = ngx.HTTP_POST,
-            body = ngx.encode_args({
-                size = ctx.range_total,
-                chunk_size = ctx.content_length,
-                file_size = util.fsize(ctx.file_path),
-                bytes_received = ngx.var.bytes_received,
-                request_length = ngx.var.request_length,
-                request_time = ngx.var.request_time,
-                session_time = ngx.var.session_time,
-                id = ctx.id,
-                path = ctx.file_path,
-                name = ctx.get_name(),
-            })
-        })
+        return report_file_uploaded(self, ctx)
     end
 end
 
