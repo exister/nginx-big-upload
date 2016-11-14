@@ -30,6 +30,23 @@ local function end_backend(self, ctx)
           sha1 = ctx.sha1
         })
     })
+  elseif self.backend_progress then
+      ngx.req.set_header('Content-Type', 'application/x-www-form-urlencoded')
+      return ngx.location.capture(self.backend_progress, {
+        method = ngx.HTTP_POST,
+        body = ngx.encode_args({
+            size = ctx.range_total,
+            chunk_size = ctx.content_length,
+            file_size = util.fsize(ctx.file_path),
+            bytes_received = ngx.var.bytes_received,
+            request_length = ngx.var.request_length,
+            request_time = ngx.var.request_time,
+            session_time = ngx.var.session_time,
+            id = ctx.id,
+            path = ctx.file_path,
+            name = ctx.get_name(),
+        })
+    })
   end
 end
 
@@ -48,13 +65,14 @@ local function on_body_end(self, ctx)
 end
 
 
-function _M:new(dir, backend)
+function _M:new(dir, backend, backend_progress)
     if not backend then
       return nil, "Configuration error: no backend specified"
     end
     local inst = {
         super = file_storage_handler:new(dir),
         backend = backend,
+        backend_progress = backend_progress,
         on_body_start = on_body_start,
         on_body_end = on_body_end
     }

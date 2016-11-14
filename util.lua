@@ -23,3 +23,12 @@ function get_file_name(basedir, id)
     local lower_id = id:lower()
     return concat({basedir, lower_id:sub(1, 2), lower_id:sub(3, 4), id}, "/")
 end
+
+function fsize (file_path)
+  local file = io.open(file_path, 'r')
+  local current = file:seek()      -- get current position
+  local size = file:seek("end")    -- get file size
+  file:seek("set", current)        -- restore position
+  file:close()
+  return size
+end

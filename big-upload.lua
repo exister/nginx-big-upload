@@ -52,7 +52,9 @@ if ngx.var.storage == 'backend_file' then
   if not ngx.var.backend_url then
     return report_result("$backend_url is not defined")
   end
-  storage_handler, err = backend_file_storage_handler:new(ngx.var.file_storage_path, ngx.var.backend_url)
+  storage_handler, err = backend_file_storage_handler:new(
+    ngx.var.file_storage_path, ngx.var.backend_url, ngx.var.backend_progress_url
+  )
 else
   storage_handler, err = file_storage_handler:new(ngx.var.file_storage_path)
 end
