@@ -32,7 +32,7 @@ local function end_backend(self, ctx)
     })
   elseif self.backend_progress then
       ngx.req.set_header('Content-Type', 'application/x-www-form-urlencoded')
-      return ngx.location.capture(self.backend_progress, {
+      ngx.location.capture(self.backend_progress, {
         method = ngx.HTTP_POST,
         body = ngx.encode_args({
             size = ctx.range_total,
