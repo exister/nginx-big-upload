@@ -14,6 +14,8 @@ local ipairs = ipairs
 local crc32 = crc32
 local sha1_handler = sha1_handler
 local io = io
+local os = os
+local chronos = require("chronos")
 local util = require('util')
 
 
@@ -190,6 +192,8 @@ local function prepopulate_response_headers(ctx)
 end
 
 function process(self)
+    self.payload_context.upload_start = chronos.nanotime()
+
     prepopulate_response_headers(self.payload_context)
 
     for i, h in ipairs(self.handlers) do
@@ -214,6 +218,9 @@ function process(self)
             if result then return result end
         end
     end
+
+    self.payload_context.upload_stop = chronos.nanotime()
+    self.payload_context.upload_time = self.payload_context.upload_stop - self.payload_context.upload_start
 
     for i, h in ipairs(self.handlers) do
         local result = h.on_body_end and h:on_body_end(self.payload_context)

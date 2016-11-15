@@ -38,13 +38,13 @@ local function report_file_progress(self, ctx)
             size = ctx.range_total,
             chunk_size = ctx.content_length,
             file_size = util.fsize(ctx.file_path),
-            bytes_received = ngx.var.bytes_received,
             request_length = ngx.var.request_length,
-            request_time = ngx.var.request_time,
-            session_time = ngx.var.session_time,
             id = ctx.id,
             path = ctx.file_path,
             name = ctx.get_name(),
+            upload_time = ctx.upload_time,
+            upload_start = ctx.upload_start,
+            upload_stop = ctx.upload_stop,
         })
     })
 end
